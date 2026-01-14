@@ -164,6 +164,7 @@ NOTES:
  *   Rating: 3
  */
 int ezThreeFourths(int x) {
+   /*I take x and then right shift it by 1 to multiply by 2^1 and then add x again to it. This multiplies by 3. Then I make a bias term that is equal to 2^2-1 if the result is negative and 0 if it is positive. I then left shift the result - bias by 2 to divide by 4 and this auto rounds everything towards 0*/
    int result = (x<<1) + x;
    int bias = (result>>31) & 3;
    result = ((result + bias) >> 2);
