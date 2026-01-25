@@ -1,7 +1,7 @@
-r/* 
+/* 
  * CS:APP Data Lab 
  * 
- * <Aarnav Choudhary 206467915>
+ * Aarnav Choudhary 206467915
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -153,20 +153,150 @@ NOTES:
    - 3 additional Zanabazar Square characters */
 //1
 /*
- * ezThreeFourths - multiplies by 3/4 rounding toward 0,
- *   Should exactly duplicate effect of C expression (x*3/4),
+ * isTmax - returns 1 if x is the maximum, two's complement number,
+ *     and 0 otherwise 
+ *   Legal ops: ! ~ & ^ | +
+ *   Max ops: 10
+ *   Rating: 1
+ */
+int isTmax(int x) {
+  int y = x+1;
+  x = x + y;
+  return !(~x) & !!y;
+
+}
+/* 
+ * evenBits - return word with all even-numbered bits set to 1
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 8
+ *   Rating: 1
+ */
+int evenBits(void) {
+  int x = 0x55;
+  int y = (x << 8) | x;
+  int z = (y << 16) | y;
+  return z;
+}
+//2
+/* 
+ * isEqual - return 1 if x == y, and 0 otherwise 
+ *   Examples: isEqual(5,5) = 1, isEqual(4,5) = 0
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 5
+ *   Rating: 2
+ */
+int isEqual(int x, int y) {
+  return !(x^y);
+}
+/* 
+ * fitsBits - return 1 if x can be represented as an 
+ *  n-bit, two's complement integer.
+ *   1 <= n <= 32
+ *   Examples: fitsBits(5,3) = 0, fitsBits(-4,3) = 1
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 15
+ *   Rating: 2
+ */
+int fitsBits(int x, int n) {
+  //extract sign bit
+  int shift = 32 + (~n+1); //32-n
+  return !(((x<<shift)>>shift)^x);
+}
+//3
+/* 
+ * conditional - same as x ? y : z 
+ *   Example: conditional(2,4,5) = 4
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 16
+ *   Rating: 3
+ */
+int conditional(int x, int y, int z) {
+  int mask = !!x;
+  mask = ~mask + 1;
+  return ((mask & y)|(~mask&z));
+}
+/* 
+ * isGreater - if x > y  then return 1, else return 0 
+ *   Example: isGreater(4,5) = 0, isGreater(5,4) = 1
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 24
+ *   Rating: 3
+ */
+int isGreater(int x, int y) {
+  int x_sign = (x >> 31) & 1;
+  int y_sign = (y >> 31) & 1; //extracts both signed bits 1 is negative and 0 is positive
+  int diff = x + (~y+1); //x - y
+  int sign_diff = (diff >> 31) & 1; //extracts signed bit of x-y
+  int signDifferent = x_sign ^ y_sign;
+
+  int case1 = signDifferent & (!x_sign);                  // x>=0, y<0
+  int case2 = (!signDifferent) & (!sign_diff) & (!!diff); // same sign, diff>0
+  
+  return case1 | case2;
+}
+/*
+ * multFiveEighths - multiplies by 5/8 rounding toward 0.
+ *   Should exactly duplicate effect of C expression (x*5/8),
  *   including overflow behavior.
- *   Examples: ezThreeFourths(11) = 8
- *             ezThreeFourths(-9) = -6
- *             ezThreeFourths(1073741824) = -268435456 (overflow)
+ *   Examples: multFiveEighths(77) = 48
+ *             multFiveEighths(-22) = -13
+ *             multFiveEighths(1073741824) = 13421728 (overflow)
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 3
  */
-int ezThreeFourths(int x) {
-   /*I take x and then right shift it by 1 to multiply by 2^1 and then add x again to it. This multiplies by 3. Then I make a bias term that is equal to 2^2-1 if the result is negative and 0 if it is positive. I then left shift the result - bias by 2 to divide by 4 and this auto rounds everything towards 0*/
-   int result = (x<<1) + x;
-   int bias = (result>>31) & 3;
-   result = ((result + bias) >> 2);
-   return result;
+int multFiveEighths(int x) {
+  int result = (x << 2) + x;
+  int bias = result >> 31 & 7;
+  result = (result + bias) >> 3;
+  return result;
+}
+//4
+/* 
+ * logicalNeg - implement the ! operator, using all of 
+ *              the legal operators except !
+ *   Examples: logicalNeg(3) = 0, logicalNeg(0) = 1
+ *   Legal ops: ~ & ^ | + << >>
+ *   Max ops: 12
+ *   Rating: 4 
+ */
+int logicalNeg(int x) {
+  //we can look at the signbit of x | ~x;
+  int sign_check = x | (~x+1);
+  sign_check = ((sign_check >> 31)) + 1;
+  return sign_check;
+}
+/* 
+ * twosComp2SignMag - Convert from two's complement to sign-magnitude 
+ *   where the MSB is the sign bit
+ *   You can assume that x > TMin
+ *   Example: twosComp2SignMag(-5) = 0x80000005.
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 15
+ *   Rating: 4
+ */
+int twosComp2SignMag(int x) {
+  int msb_two_comp = ((x >> 31) & 1);
+  int start_sign_mag = msb_two_comp << 31; //1000... if neg or 0000... if positive
+  int mask = start_sign_mag >> 31;
+  int abs_val = (x ^ mask) + (~mask + 1);
+  int magMask = ~ (1 << 31);
+  return start_sign_mag | (abs_val & magMask);
+}
+/*
+ * isPower2 - returns 1 if x is a power of 2, and 0 otherwise
+ *   Examples: isPower2(5) = 0, isPower2(8) = 1, isPower2(0) = 0
+ *   Note that no negative number is a power of 2.
+ *   Legal ops: ! ~ & ^ | + << >>
+ *   Max ops: 20
+ *   Rating: 4
+ */
+int isPower2(int x) {
+  //only way this is true is if there is only one 1 digit in the entire number
+  //first exclude 0 then exclude negatives and then do x & x-1 should == 0
+  int nonzero = !!x; // x != 0
+  int nonneg = !(x >> 31); // x >= 0
+  int x_minus_one = x + ~0; // x - 1
+  int onebit = !(x & x_minus_one); // x has only one 1-bit (works for x>0)
+  return nonzero & nonneg & onebit;
 }
